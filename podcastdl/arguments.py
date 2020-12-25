@@ -27,4 +27,16 @@ def parse_args():
         help="Download the newest episodes first instead of the oldest",
         action='store_true',
     )
+    parser.add_argument(
+        '--full-title',
+        dest='full_title',
+        help="Show full title of episodes in output",
+        action='store_true',
+    )
+    parser.add_argument(
+        '--overwrite',
+        dest='overwrite',
+        help="Overwrite already existing episode files",
+        action='store_true'
+    )
     return parser.parse_args()

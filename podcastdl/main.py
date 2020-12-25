@@ -14,6 +14,8 @@ def run():
                 options.url,
                 limit=options.limit,
                 oldest=not options.newest,
+                full_title=option.full_title,
+                overwrite=options.overwrite,
             )
     except KeyboardInterrupt:
         pass

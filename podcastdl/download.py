@@ -6,7 +6,7 @@ import time, os, feedparser, requests
 def download(url, **kwargs):
     """Downloads a podcast"""
     podcast = _get_feed(url, **kwargs)
-    _download_episodes(podcast)
+    _download_episodes(podcast, **kwargs)
 
 def _get_feed(url, **kwargs):
     feed = feedparser.parse(url)
@@ -17,31 +17,38 @@ def _get_feed(url, **kwargs):
         podcast.add_episode(episode)
     return podcast
 
-def _download_episode(episode, feed_title, overwrite):
+def _download_episode(episode, feed_title, overwrite=False, full_title=False):
     """Downloads a single episode"""
+    # Getting basic data
     url = episode.url
     req = requests.get(url, stream=True)
     output_file = os.path.join(feed_title, f"{episode.title}.mp3")
+    # Create title for printing
+    title = episode.title
+    if len(title) > 30 and not full_title:
+        title = f"{title[:27]}..."
+    # Checking old file
     if os.path.isfile(output_file):
         if overwrite or os.path.getsize(output_file) < int(req.headers['Content-length']):
             os.remove(output_file)
         else:
             print(f"[blue]{episode.title}[/blue] already exists. skipping")
             return
+    # Downloading
     with Progress() as progress:
-        task = progress.add_task(f"Downloading [blue]{episode.title}[/blue]", total=int(req.headers['Content-length']))
+        task = progress.add_task(f"Downloading [blue]{title}[/blue]", total=int(req.headers['Content-length']))
         with open(output_file, "ab") as f:
             for chunk in req.iter_content(chunk_size=1024):
                 f.write(chunk)
                 progress.update(task, advance=1024)
 
-def _download_episodes(podcast, overwrite=False):
+def _download_episodes(podcast, **kwargs):
     """Downloads episodes from a list"""
     print(f"Downloading [red]{len(podcast)}[/red] episodes from [cyan]{podcast.title}[/cyan]")
     if not os.path.isdir(podcast.title):
         os.mkdir(podcast.title)
     for i in podcast:
-        _download_episode(i, podcast.title, overwrite)
+        _download_episode(i, podcast.title, **kwargs)
 
 def _filter_entries(entries, limit=None, oldest=True, **kwargs):
     if oldest:
