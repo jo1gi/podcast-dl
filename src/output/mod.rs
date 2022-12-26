@@ -1,4 +1,5 @@
 mod episode_iterator;
+mod formatting;
 mod write_options;
 
 use crate::{
@@ -18,15 +19,15 @@ pub use write_options::WriteOptions;
 pub async fn download_episodes(podcast: &Podcast, options: &WriteOptions) -> Result<(), Error> {
     let client = reqwest::Client::new();
     let episodes = EpisodeIterator::new(podcast, options);
-    let output_dir = get_dir(podcast)?;
     for episode in episodes {
-        write_episode(episode, &output_dir, &client).await?;
+        let path = formatting::format_episode(podcast, episode, &options.template)?;
+        write_episode(episode, &path, &client).await?;
     }
     Ok(())
 }
 
-async fn write_episode(episode: &Episode, output_dir: &PathBuf, client: &reqwest::Client) -> Result<(), Error> {
-    let file_path = output_dir.join(&format!("{}.mp3", episode.title));
+async fn write_episode(episode: &Episode, path: &str, client: &reqwest::Client) -> Result<(), Error> {
+    let file_path = create_path(path)?;
     if file_path.exists() {
         log::info!("Skipping {}", episode.title);
         return Ok(());
@@ -46,10 +47,10 @@ async fn write_episode(episode: &Episode, output_dir: &PathBuf, client: &reqwest
 
 }
 
-fn get_dir(podcast: &Podcast) -> Result<PathBuf, Error> {
-    let dir = PathBuf::from_str(&podcast.title).unwrap();
-    if !dir.exists() {
-        std::fs::create_dir_all(&dir)?;
+fn create_path(path: &str) -> Result<PathBuf, Error> {
+    let pathbuf = PathBuf::from_str(path).unwrap();
+    if !pathbuf.parent().unwrap().exists() {
+        std::fs::create_dir_all(pathbuf.parent().unwrap())?;
     }
-    return Ok(dir);
+    return Ok(pathbuf);
 }

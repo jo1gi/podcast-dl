@@ -11,6 +11,8 @@ pub enum Error {
     InitLogging(#[from] fern::InitError),
     /// Parsing
     Parse(#[from] ParseError),
+    /// Format string
+    StringFormat,
 }
 
 #[derive(Debug, Error, Display)]
@@ -23,4 +25,6 @@ pub enum ParseError {
     UTF8(#[from] std::str::Utf8Error),
     /// Json
     Json(#[from] serde_json::Error),
+    /// Missing element
+    MissingElement,
 }

@@ -1,10 +1,10 @@
 mod create;
+mod execute;
 
 use url::Url;
-use crate::{error::{Error, ParseError}, Podcast};
-use super::parse::parse_rss_feed;
 
 pub use create::create_strategy;
+pub use execute::execute_strategy;
 
 pub struct Strategy {
     url: Url,
@@ -48,12 +48,21 @@ impl Strategy {
         self.add_url_operation(UrlOperation::Json(lookup))
     }
 
+    fn try_op(mut self, op: UrlOperation) -> Self {
+        self.operations.push(
+            Operation::Try(op)
+        );
+        self
+    }
+
 
 }
 
 enum Operation {
     Podcast(PodcastOperation),
     Url(UrlOperation),
+    /// Skip if inner operation fails. Apply otherwise
+    Try(UrlOperation),
 }
 
 /// Operation that returns a podcast object
@@ -62,50 +71,10 @@ enum PodcastOperation {
 }
 
 /// Operation that returns an url
+#[derive(Debug)]
 enum UrlOperation {
-    Json(Vec<&'static str>)
-}
-
-pub async fn execute_strategy(strategy: &Strategy) -> Result<Podcast, Error> {
-    let mut url = strategy.url.clone();
-    for operation in &strategy.operations {
-        let content = reqwest::get(url)
-            .await?
-            .bytes()
-            .await?;
-        match operation {
-            Operation::Podcast(op) => return Ok(execute_podcast_operation(&op, &content)?),
-            Operation::Url(op) => {
-                url = execute_url_operation(&op, &content)?;
-            }
-        }
-    }
-    unreachable!()
-}
-
-fn execute_podcast_operation(op: &PodcastOperation, content: &bytes::Bytes) -> Result<Podcast, ParseError> {
-    match op {
-        PodcastOperation::RSS => parse_rss_feed(content)
-    }
-}
-
-fn execute_url_operation(op: &UrlOperation, content: &bytes::Bytes) -> Result<Url, ParseError> {
-    let url = match op {
-        UrlOperation::Json(lookup) => {
-            let text = std::str::from_utf8(content)?;
-            let mut json: serde_json::Value = serde_json::from_str(text)?;
-            let mut iter = lookup.iter();
-            loop {
-                if json.is_array() {
-                    json = json[0].take();
-                } else if json.is_object() {
-                    json = json[iter.next().unwrap()].take();
-                } else {
-                    break;
-                }
-            }
-            json.as_str().unwrap().to_string()
-        }
-    };
-    Ok(Url::parse(&url)?)
+    /// Select url in json
+    Json(Vec<&'static str>),
+    /// Find rss link in html
+    RssLink,
 }

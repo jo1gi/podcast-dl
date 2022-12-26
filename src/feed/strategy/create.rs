@@ -5,14 +5,16 @@ use url::Url;
 pub fn create_strategy(input: &str) -> Result<Strategy, ParseError> {
     let url = Url::parse(input)?;
     let host = url.host_str();
-    if host == Some("rss.com") {
-        return Ok(rss_dot_com(&url));
-    }
-    if host == Some("podcasts.apple.com") {
-        return Ok(itunes(&url));
-    }
-    Ok(Strategy::from_url(url)
-        .rss())
+    let strategy = if host == Some("rss.com") {
+        rss_dot_com(&url)
+    } else if host == Some("podcasts.apple.com") {
+        itunes(&url)
+    } else {
+        Strategy::from_url(url)
+            .try_op(super::UrlOperation::RssLink)
+            .rss()
+    };
+    Ok(strategy)
 }
 
 fn last_path_part(url: &Url) -> Option<&str> {

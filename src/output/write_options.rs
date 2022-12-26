@@ -7,4 +7,6 @@ pub struct WriteOptions {
     pub offset: Option<usize>,
     /// Start with the oldest episodes
     pub oldest: bool,
+    /// Output template
+    pub template: String,
 }

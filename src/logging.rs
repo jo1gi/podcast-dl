@@ -1,4 +1,4 @@
-use log::{Level, LevelFilter};
+use log::{Level, LevelFilter, Metadata};
 use colored::{Color, Colorize};
 use crate::Podcast;
 
@@ -18,11 +18,24 @@ pub fn setup_logger(level: LevelFilter) -> Result<(), fern::InitError> {
             ))
         })
         .level(level)
+        .filter(|metadata| {
+            (metadata.level() != Level::Debug && metadata.level() != Level::Trace)
+            || filter_log_message(metadata)
+        })
         .chain(std::io::stderr())
         .apply()?;
     Ok(())
 }
 
+/// Filter out log messages based on target
+fn filter_log_message(metadata: &Metadata) -> bool {
+    ![
+        "selectors::matching",
+        "html5ever::tokenizer",
+        "html5ever::tokenizer::char_ref",
+        "html5ever::tree_builder",
+    ].contains(&metadata.target())
+}
 
 fn format_log_message(msg: String, level: Level, target: &str) -> (String, String, Color) {
     match level {

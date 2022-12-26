@@ -20,6 +20,7 @@ fn extract_episodes(channel: &rss::Channel) -> Result<Vec<Episode>, ParseError> 
             pub_date: item.pub_date.as_ref()
                 .and_then(|x| chrono::DateTime::parse_from_rfc2822(&x).ok()),
             index: Some(index+1),
+            author: item.author.clone(),
         }))
         .collect()
 }

@@ -21,6 +21,26 @@ pub struct Episode {
     pub link: String,
     pub pub_date: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub index: Option<usize>,
+    pub author: Option<String>,
+}
+
+impl Episode {
+
+    /// Return publication day
+    pub fn publication_day(&self) -> u32 {
+        0
+    }
+
+    /// Return publication month (1 indexed)
+    pub fn publication_month(&self) -> u32 {
+        0
+    }
+
+    /// Return publication year
+    pub fn publication_year(&self) -> u32 {
+        0
+    }
+
 }
 
 
