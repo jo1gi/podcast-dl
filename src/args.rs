@@ -14,6 +14,9 @@ pub enum Command {
     Download(Download),
     /// Print podcast info
     Print(Print),
+    /// Search for a podcast
+    #[cfg(feature = "search")]
+    Search(Search),
 }
 
 
@@ -39,4 +42,10 @@ pub struct Download {
 pub struct Print {
     /// Url of podcast to download
     pub url: String,
+}
+
+#[derive(StructOpt)]
+pub struct Search {
+    /// Search terms
+    pub search_terms: String,
 }

@@ -62,7 +62,6 @@ fn execute_url_operation(op: &UrlOperation, content: &bytes::Bytes) -> Result<Ur
             let selector = scraper::Selector::parse(r#"link"#)
                 .unwrap();
             doc.select(&selector)
-                .inspect(|link| println!("{:?}", link))
                 .find_map(|link| link.value().attr("href").map(String::from))
                 .ok_or(ParseError::MissingElement)?
         }

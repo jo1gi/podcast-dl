@@ -2,10 +2,13 @@ mod args;
 mod error;
 mod feed;
 mod logging;
+#[cfg(feature = "search")]
+mod search;
 mod output;
 
 pub use error::Error;
 pub use feed::{Podcast, Episode};
+
 
 use structopt::StructOpt;
 use output::WriteOptions;
@@ -18,6 +21,8 @@ async fn main() -> Result<(), error::Error> {
     match args.command {
         Command::Download(download_args) => download(&download_args).await?,
         Command::Print(print_args) => print(&print_args).await?,
+        #[cfg(feature = "search")]
+        Command::Search(search_args) => search(&search_args).await?,
     }
     Ok(())
 }
@@ -39,5 +44,12 @@ async fn download(args: &args::Download) -> Result<(), error::Error> {
 async fn print(args: &args::Print) -> Result<(), error::Error> {
     let podcast = feed::download_feed(&args.url).await?;
     logging::print_podcast(&podcast);
+    Ok(())
+}
+
+#[cfg(feature = "search")]
+async fn search(args: &args::Search) -> Result<(), error::Error> {
+    let search_results = search::search(&args.search_terms).await?;
+    logging::print_search_results(&search_results);
     Ok(())
 }

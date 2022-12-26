@@ -1,6 +1,6 @@
 use log::{Level, LevelFilter, Metadata};
 use colored::{Color, Colorize};
-use crate::Podcast;
+use crate::{Podcast, search::SearchResult};
 
 /// Setup logging system
 pub fn setup_logger(level: LevelFilter) -> Result<(), fern::InitError> {
@@ -58,4 +58,22 @@ fn format_log_message(msg: String, level: Level, target: &str) -> (String, Strin
 
 pub fn print_podcast(podcast: &Podcast) {
     println!("{:#?}", podcast);
+}
+
+#[cfg(feature = "search")]
+pub fn print_search_results(search_results: &Vec<SearchResult>) {
+    println!(
+        "{:<35} {:<35} {}",
+        "Title".bold().green(),
+        "Artist".bold().cyan(),
+        "Feed".bold().white()
+    );
+    for result in search_results {
+        println!(
+            "{:<35} {:<35} {}",
+            result.title.green(),
+            result.artist.cyan(),
+            result.url.white(),
+        );
+    }
 }
