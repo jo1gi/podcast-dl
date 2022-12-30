@@ -36,6 +36,9 @@ pub struct Download {
     /// Output template
     #[structopt(short, long, default_value = "{podcast_title}/{episode_title}.mp3")]
     pub output: String,
+    /// Download cover image
+    #[structopt(long)]
+    pub download_image: bool,
 }
 
 #[derive(StructOpt)]

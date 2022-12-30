@@ -2,6 +2,7 @@ mod parse;
 mod strategy;
 
 use crate::error::Error;
+use chrono::Datelike;
 
 /// Podcast feed
 #[derive(Debug)]
@@ -12,6 +13,8 @@ pub struct Podcast {
     pub episodes: Vec<Episode>,
     /// Description of podcast
     pub description: Option<String>,
+    /// Link to cover image
+    pub image: Option<String>,
 }
 
 /// Podcast episode
@@ -22,23 +25,27 @@ pub struct Episode {
     pub pub_date: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub index: Option<usize>,
     pub author: Option<String>,
+    pub description: Option<String>,
 }
 
 impl Episode {
 
     /// Return publication day
-    pub fn publication_day(&self) -> u32 {
-        0
+    pub fn publication_day(&self) -> Option<usize> {
+        self.pub_date
+            .map(|x| x.day() as usize)
     }
 
     /// Return publication month (1 indexed)
-    pub fn publication_month(&self) -> u32 {
-        0
+    pub fn publication_month(&self) -> Option<usize> {
+        self.pub_date
+            .map(|x| x.month() as usize)
     }
 
     /// Return publication year
-    pub fn publication_year(&self) -> u32 {
-        0
+    pub fn publication_year(&self) -> Option<usize> {
+        self.pub_date
+            .map(|x| x.year() as usize)
     }
 
 }

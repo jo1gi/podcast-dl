@@ -5,8 +5,9 @@ pub fn parse_rss_feed(content: &bytes::Bytes) -> Result<Podcast, ParseError> {
     let channel = rss::Channel::read_from(&content[..])?;
     Ok(Podcast {
         title: channel.title.clone(),
-        description: Some(channel.description.clone()),
         episodes: extract_episodes(&channel)?,
+        description: Some(channel.description.clone()),
+        image: channel.image.map(|x| x.url),
     })
 }
 
@@ -21,6 +22,7 @@ fn extract_episodes(channel: &rss::Channel) -> Result<Vec<Episode>, ParseError> 
                 .and_then(|x| chrono::DateTime::parse_from_rfc2822(&x).ok()),
             index: Some(index+1),
             author: item.author.clone(),
+            description: item.description.clone(),
         }))
         .collect()
 }

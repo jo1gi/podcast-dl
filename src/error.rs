@@ -13,6 +13,8 @@ pub enum Error {
     Parse(#[from] ParseError),
     /// Format string
     StringFormat,
+    /// Failed to create path
+    Path,
 }
 
 #[derive(Debug, Error, Display)]

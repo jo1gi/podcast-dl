@@ -100,7 +100,7 @@ impl<'a> FormatArgument for Variant<'a> {
         format_int(self, f, &fmt::UpperExp::fmt)
     }
 
-     fn to_usize(&self) -> Result<usize, ()> {
+    fn to_usize(&self) -> Result<usize, ()> {
         match self {
             Variant::Int(val) => Ok(*val),
             Variant::OptionInt(x) => match x {
