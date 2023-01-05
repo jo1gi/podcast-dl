@@ -15,6 +15,15 @@ pub enum Error {
     StringFormat,
     /// Failed to create path
     Path,
+    /// File aldready exists
+    FileExists(String),
+    /// Could not write {0} file
+    WriteToFile(&'static str),
+    /// Missing {value} from {from}
+    ValueMissing {
+        value: &'static str,
+        from: &'static str,
+    },
 }
 
 #[derive(Debug, Error, Display)]

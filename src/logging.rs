@@ -1,6 +1,6 @@
 use log::{Level, LevelFilter, Metadata};
 use colored::{Color, Colorize};
-use crate::{Podcast, search::SearchResult};
+use crate::{Podcast, search::SearchResult, Error};
 
 /// Setup logging system
 pub fn setup_logger(level: LevelFilter) -> Result<(), fern::InitError> {
@@ -56,8 +56,42 @@ fn format_log_message(msg: String, level: Level, target: &str) -> (String, Strin
     }
 }
 
+fn text_wrap(text: &str, length: u32) -> String {
+    let mut output = String::new();
+    let mut current_line_length = 0;
+    for part in text.split(" ") {
+        if current_line_length > length {
+            output.push('\n');
+            current_line_length = 0;
+        }
+        output.push_str(&part);
+        output.push(' ');
+        current_line_length += part.len() as u32;
+    }
+    return output;
+}
+
+fn print_title(title: &str, value: &str) {
+    println!("{}\n{}\n", title.cyan().bold(), value);
+}
+
 pub fn print_podcast(podcast: &Podcast) {
-    println!("{:#?}", podcast);
+    print_title("Title", &podcast.title);
+    if let Some(description) = &podcast.description {
+        print_title("Description", &text_wrap(&description, 40));
+    }
+    println!("{}", "Episodes".cyan().bold());
+    for episode in &podcast.episodes {
+        println!("- {}", episode.title);
+    }
+}
+
+pub fn shorten_to_length(input: &str, len: usize) -> String {
+    if input.len() > len {
+       input[0..len].to_string() + "…"
+    } else {
+        input.to_string()
+    }
 }
 
 #[cfg(feature = "search")]
@@ -69,11 +103,22 @@ pub fn print_search_results(search_results: &Vec<SearchResult>) {
         "Feed".bold().white()
     );
     for result in search_results {
+        let formatted_title = &shorten_to_length(&result.title, 34);
+        let formatted_artist = &shorten_to_length(&result.artist, 34);
         println!(
             "{:<35} {:<35} {}",
-            result.title.green(),
-            result.artist.cyan(),
+            formatted_title.green(),
+            formatted_artist.cyan(),
             result.url.white(),
         );
+    }
+}
+
+pub fn print_download_status(result: &Result<(), Error>) {
+    if let Err(error) = result {
+        match error {
+            Error::FileExists(title) => log::info!("Skipping {}", title),
+            e => log::error!("{}", e),
+        }
     }
 }

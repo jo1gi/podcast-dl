@@ -9,7 +9,6 @@ mod output;
 pub use error::Error;
 pub use feed::{Podcast, Episode};
 
-
 use structopt::StructOpt;
 use output::WriteOptions;
 use args::Command;
@@ -35,10 +34,14 @@ async fn download(args: &args::Download) -> Result<(), error::Error> {
         offset: args.offset,
         oldest: args.oldest,
         template: args.output.clone(),
+        write_episode_description: args.write_episode_description,
     };
-    output::download_episodes(&podcast, &write_options).await?;
+    output::download_podcast(&podcast, &write_options).await?;
     if args.download_image {
         output::download_image(&podcast, &write_options).await?;
+    }
+    if args.write_description {
+        output::write_description(&podcast, &write_options).await?;
     }
     Ok(())
 }

@@ -5,12 +5,10 @@ use url::Url;
 pub fn create_strategy(input: &str) -> Result<Strategy, ParseError> {
     let url = Url::parse(input)?;
     let host = url.host_str();
-    let strategy = if host == Some("rss.com") {
-        rss_dot_com(&url)
-    } else if host == Some("podcasts.apple.com") {
-        itunes(&url)
-    } else {
-        Strategy::from_url(url)
+    let strategy = match host {
+        Some("rss.com") => rss_dot_com(&url),
+        Some("podcasts.apple.com") => itunes(&url),
+        _ => Strategy::from_url(url)
             .try_op(super::UrlOperation::RssLink)
             .rss()
     };

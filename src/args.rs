@@ -39,6 +39,12 @@ pub struct Download {
     /// Download cover image
     #[structopt(long)]
     pub download_image: bool,
+    /// Write description to disk
+    #[structopt(long)]
+    pub write_description: bool,
+    #[structopt(long)]
+    /// Write episode description to file
+    pub write_episode_description: bool,
 }
 
 #[derive(StructOpt)]
@@ -50,5 +56,5 @@ pub struct Print {
 #[derive(StructOpt)]
 pub struct Search {
     /// Search terms
-    pub search_terms: String,
+    pub search_terms: Vec<String>,
 }

@@ -1,52 +1,54 @@
-use crate::error::{Error, ParseError};
+mod search_engines;
 
+use crate::error::Error;
 use reqwest::Client;
+use search_engines::*;
 
 pub struct SearchResult {
     /// Title of podcast
     pub title: String,
     /// Url of podcast
     pub url: String,
+    /// Who made the podacst
     pub artist: String,
+    /// Url of podcast cover image
     pub artwork: String,
+    /// The search engine the result was found on
     pub search_engine: SearchEngine,
 }
 
+type SearchArgs = Vec<String>;
+
+#[derive(Copy, Clone)]
 pub enum SearchEngine {
-    Itunes
+    Itunes,
+    PodcastIndex,
+}
+
+macro_rules! run_search_engines {
+    ($search_terms:expr, $($search_engine:expr),+) => {{
+        let client = Client::new();
+        let mut output = Vec::new();
+        $({
+            let mut results = match $search_engine($search_terms, &client).await {
+                Ok(results) => results,
+                Err(error) => {
+                    log::error!("{}", error);
+                    Vec::new()
+                }
+            };
+            output.append(&mut results);
+        })+
+        output.dedup_by_key(|x| x.url.clone());
+        return Ok(output);
+    }}
 }
 
 /// Search for podcast feeds
-pub async fn search(search_terms: &str) -> Result<Vec<SearchResult>, Error> {
-    let client = Client::new();
-    itunes_search(search_terms, &client).await
-}
-
-/// Search for podcast feeds on Itunes
-async fn itunes_search(search_terms: &str, client: &Client) -> Result<Vec<SearchResult>, Error> {
-    let formatted_terms = search_terms.replace(" ", "+");
-    let url = format!(
-        "https://itunes.apple.com/search?media=podcast&term={}",
-        formatted_terms
-    );
-    let response: serde_json::Value = client.get(&url)
-        .send()
-        .await?
-        .json()
-        .await?;
-    let results = response["results"]
-        .as_array()
-        .ok_or(ParseError::MissingElement)?
-        .iter()
-        .filter_map(|result| {
-            Some(SearchResult {
-                title: result["collectionName"].as_str()?.to_string(),
-                url: result["feedUrl"].as_str()?.to_string(),
-                artist: result["artistName"].as_str()?.to_string(),
-                artwork: result["artworkUrl600"].as_str()?.to_string(),
-                search_engine: SearchEngine::Itunes,
-            })
-        })
-        .collect();
-    return Ok(results);
+pub async fn search(search_terms: &Vec<String>) -> Result<Vec<SearchResult>, Error> {
+    run_search_engines!(
+        search_terms,
+        itunes_search,
+        podcast_index_search
+    )
 }

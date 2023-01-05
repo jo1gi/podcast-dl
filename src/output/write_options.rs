@@ -9,4 +9,6 @@ pub struct WriteOptions {
     pub oldest: bool,
     /// Output template
     pub template: String,
+    /// Write episode description to seperate file
+    pub write_episode_description: bool,
 }

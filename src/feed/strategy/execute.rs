@@ -66,7 +66,7 @@ fn execute_url_json(content: &bytes::Bytes, lookup: &Vec<&str>) -> Result<String
 fn execute_url_rsslink(content: &bytes::Bytes) -> Result<String, ParseError> {
     let text = std::str::from_utf8(content)?;
     let doc = scraper::Html::parse_document(&text);
-    let selector = scraper::Selector::parse(r#"link"#)
+    let selector = scraper::Selector::parse(r#"link[type="application/rss+xml"]"#)
         .unwrap();
     let result = doc.select(&selector)
         .find_map(|link| link.value().attr("href").map(String::from))

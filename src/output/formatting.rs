@@ -5,6 +5,8 @@ use std::{
 };
 use rt_format::{Format, FormatArgument, ParsedFormat, Specifier};
 
+use super::WriteOptions;
+
 const UNKNOWN: &str = "UNKNOWN";
 
 #[derive(Debug, PartialEq, Clone)]
@@ -112,7 +114,8 @@ impl<'a> FormatArgument for Variant<'a> {
     }
 }
 
-fn episode_options<'a>(podcast: &'a Podcast, episode: &'a Episode) -> HashMap<&'static str, Variant<'a>> {
+type OutputOptions<'a> = HashMap<&'static str, Variant<'a>>;
+fn episode_options<'a>(podcast: &'a Podcast, episode: &'a Episode) -> OutputOptions<'a> {
     HashMap::from([
         ("podcast_title", Variant::String(&podcast.title)),
         ("episode_title", Variant::String(&episode.title)),
@@ -124,10 +127,11 @@ fn episode_options<'a>(podcast: &'a Podcast, episode: &'a Episode) -> HashMap<&'
 pub fn format_episode(
     podcast: &Podcast,
     episode: &Episode,
-    template: &str
+    options: &WriteOptions
 ) -> Result<String, Error> {
     let named_options = episode_options(podcast, episode);
-    let args = ParsedFormat::parse(template, &[], &named_options)
+    let args = ParsedFormat::parse(&options.template, &[], &named_options)
         .map_err(|_e| crate::Error::StringFormat)?;
-    return Ok(format!("{}", args));
+    let formatted = format!("{}", args);
+    return Ok(formatted);
 }
