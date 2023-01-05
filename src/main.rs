@@ -35,6 +35,7 @@ async fn download(args: &args::Download) -> Result<(), error::Error> {
         oldest: args.oldest,
         template: args.output.clone(),
         write_episode_description: args.write_episode_description,
+        remove_from_output: args.remove_from_output.clone(),
     };
     output::download_podcast(&podcast, &write_options).await?;
     if args.download_image {

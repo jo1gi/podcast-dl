@@ -42,9 +42,12 @@ pub struct Download {
     /// Write description to disk
     #[structopt(long)]
     pub write_description: bool,
-    #[structopt(long)]
     /// Write episode description to file
+    #[structopt(long)]
     pub write_episode_description: bool,
+    /// Remove a string from the output
+    #[structopt(long)]
+    pub remove_from_output: Vec<String>,
 }
 
 #[derive(StructOpt)]

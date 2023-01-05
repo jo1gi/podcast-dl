@@ -132,6 +132,9 @@ pub fn format_episode(
     let named_options = episode_options(podcast, episode);
     let args = ParsedFormat::parse(&options.template, &[], &named_options)
         .map_err(|_e| crate::Error::StringFormat)?;
-    let formatted = format!("{}", args);
+    let mut formatted = format!("{}", args);
+    for remove_string in &options.remove_from_output {
+        formatted = formatted.replace(remove_string, "");
+    }
     return Ok(formatted);
 }
